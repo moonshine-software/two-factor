@@ -41,7 +41,7 @@
         }
     },
     "conflict": {
-        "moonshine/moonshine": "<2.0"
+        "moonshine/moonshine": "<2.4"
     },
     "scripts": {
         "test": "vendor/bin/phpunit",

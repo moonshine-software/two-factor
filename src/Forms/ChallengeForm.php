@@ -14,13 +14,13 @@ final class ChallengeForm
         return FormBuilder::make(route('moonshine-two-factor.check'))
             ->fields([
                 Password::make(__('moonshine-two-factor::ui.code'), 'code')
-                    ->customAttributes(['autocomplete' => 'new-password'])
+                    ->customAttributes(['autocomplete' => 'off'])
                     ->eye(),
 
                 Password::make(__('moonshine-two-factor::ui.or_recovery_code'), 'recovery_code')
-                    ->customAttributes(['autocomplete' => 'new-password'])
+                    ->customAttributes(['autocomplete' => 'off'])
                     ->eye()
             ])
-            ->submit(__('moonshine-two-factor::ui.confirm'));
+            ->submit(__('moonshine-two-factor::ui.confirm'), ['class' => 'btn btn-primary w-full']);
     }
 }

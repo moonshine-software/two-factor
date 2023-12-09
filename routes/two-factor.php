@@ -14,11 +14,6 @@ Route::prefix(config('moonshine.route.prefix', ''))
             ->group(function (): void {
 
             Route::post(
-                'check',
-                'check',
-            )->name('check');
-
-            Route::post(
                 'enable',
                 'enable',
             )->name('enable');
@@ -38,13 +33,20 @@ Route::prefix(config('moonshine.route.prefix', ''))
                 'refreshCodes',
             )->name('refresh-codes');
 
+            Route::post(
+                'check',
+                'check',
+            )->name('check')
+                ->withoutMiddleware(config('moonshine.auth.middleware', []));
+
             Route::get('challenge', static function () {
                 return ViewPage::make()
                     ->setLayout('moonshine::layouts.login')
                     ->setContentView(
-                        'moonshine-two-factor.login.two-factor-challenge',
+                        'moonshine-two-factor::login.two-factor-challenge',
                         ['form' => ChallengeForm::make()]
                     );
-            })->name('challenge');
+            })->name('challenge')
+                ->withoutMiddleware(config('moonshine.auth.middleware', []));
         });
     });

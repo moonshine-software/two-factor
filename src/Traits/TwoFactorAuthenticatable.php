@@ -92,7 +92,7 @@ trait TwoFactorAuthenticatable
      */
     public function verify(string $secret, string $code): bool
     {
-        return (new TwoFactorProvider())->verify(
+        return app(TwoFactorProvider::class)->verify(
             decrypt($secret),
             $code
         );
@@ -117,7 +117,7 @@ trait TwoFactorAuthenticatable
 
     public function twoFactorQrCodeUrl(): string
     {
-        return (new TwoFactorProvider())->qrCodeUrl(
+        return app(TwoFactorProvider::class)->qrCodeUrl(
             config('app.name'),
             $this->{config('moonshine.auth.fields.username', 'email')},
             decrypt($this->two_factor_secret)

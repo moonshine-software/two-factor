@@ -22,7 +22,7 @@ final class TwoFactorAuthPipe
             ]);
 
             return redirect()
-                ->route('two-factor.challenge');
+                ->route('moonshine-two-factor.challenge');
         }
 
         return $next($request);
@@ -35,7 +35,7 @@ final class TwoFactorAuthPipe
         /** @var Authenticatable|Model $user $user */
         $user = MoonShineAuth::model()
             ?->query()
-            ?->where($username, $request->{$username})
+            ?->where($username, $request->get('username'))
             ?->first();
 
         $attempt = MoonShineAuth::provider()

@@ -19,6 +19,6 @@
             </p>
         </div>
 
-        {!! $form->render() !!}
+        {{ $form->render() }}
     </div>
 </div>

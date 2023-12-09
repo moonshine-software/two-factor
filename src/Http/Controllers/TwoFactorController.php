@@ -6,7 +6,6 @@ namespace MoonShine\TwoFactor\Http\Controllers;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\ValidationException;
 use JsonException;
 use MoonShine\Http\Controllers\MoonShineController;
 use MoonShine\MoonShineAuth;
@@ -38,16 +37,24 @@ class TwoFactorController extends MoonShineController
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
         $user = $model
             ?->query()
-            ?->findOrFail($id);
+            ?->find($id);
+
+        if (! $user || ! $request->anyFilled(['recovery_code', 'code'])) {
+            return redirect()
+                ->route('moonshine-two-factor.challenge')
+                ->withErrors(['code' => __('moonshine-two-factor::validation.invalid_code')]);
+        }
 
         if ($request->filled('recovery_code') && ! $user->verifyByRecoverCode(request('recovery_code'))) {
-            return back()
+            return redirect()
+                ->route('moonshine-two-factor.challenge')
                 ->withErrors(['recovery_code' => __('moonshine-two-factor::validation.invalid_recovery_code')]);
         }
 
-        if ($request->filled('code') && ! $user->verify(decrypt($user->two_factor_secret), $request->code)) {
-            return back()
-                ->withErrors(['code' => __('moonshine-two-factor::validation.validation.invalid_code')]);
+        if ($request->filled('code') && ! $user->verify($user->two_factor_secret, $request->code)) {
+            return redirect()
+                ->route('moonshine-two-factor.challenge')
+                ->withErrors(['code' => __('moonshine-two-factor::validation.invalid_code')]);
         }
 
         MoonShineAuth::guard()->login($user, $remember);
@@ -113,10 +120,14 @@ class TwoFactorController extends MoonShineController
 
         if (empty($user->two_factor_secret) ||
             empty($code) ||
-            ! $user?->verify(decrypt($user->two_factor_secret), $code)) {
-            throw ValidationException::withMessages([
-                'code' => __('moonshine-two-factor::validation.validation.invalid_code'),
-            ])->errorBag('confirmTwoFactorAuthentication');
+            ! $user?->verify($user->two_factor_secret, $code)) {
+            return $request->wantsJson()
+                ? $this->json(
+                    __('moonshine-two-factor::validation.invalid_code'),
+                    messageType: 'error'
+                )
+                : back()
+                    ->withErrors(['code' => __('moonshine-two-factor::validation.invalid_code')]);
         }
 
         $user->forceFill([

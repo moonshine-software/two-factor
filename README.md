@@ -1,13 +1,8 @@
 ## MoonShine two-factor authentication
 
-Установка
-- Добавил трейт в модель
-- Выполнил миграции
-- Добавил компонент в профиль
--
 ### Requirements
 
-- MoonShine v2.0+
+- MoonShine v2.4.0+
 
 ### Installation
 

@@ -8,7 +8,6 @@ use Closure;
 use MoonShine\ActionButtons\ActionButton;
 use MoonShine\Components\FlexibleRender;
 use MoonShine\Components\FormBuilder;
-use MoonShine\Components\Layout\Flash;
 use MoonShine\Components\MoonShineComponent;
 use MoonShine\Components\When;
 use MoonShine\Decorations\Block;
@@ -37,7 +36,7 @@ final class TwoFactor
 
     private function twoFactorEnabled(): bool
     {
-        return false;
+        return config('two-factor.enable', true);
     }
 
     /**
@@ -66,8 +65,8 @@ final class TwoFactor
     protected function enableDisableTwoFactor(): MoonShineComponent
     {
         $label = request('enable-disable')
-            ? __('moonshine-two-factor::ui.enable')
-            : __('moonshine-two-factor::ui.regenerate');
+            ? __('moonshine-two-factor::ui.regenerate')
+            : __('moonshine-two-factor::ui.enable');
 
         return Fragment::make([
             When::make(
@@ -99,10 +98,10 @@ final class TwoFactor
                         ->async('DELETE', events: [
                             'fragment-updated-qr-code',
                             'fragment-updated-recovery-code',
-                            'fragment-updated-enable-disable'
+                            'fragment-updated-enable-disable',
                         ])
                 )
-            )
+            ),
         ])->name('enable-disable')->updateAsync(['enable-disable' => is_null(auth()->user()->two_factor_confirmed_at)]);
     }
 
@@ -119,13 +118,15 @@ final class TwoFactor
                         ->async(asyncEvents: [
                             'fragment-updated-qr-code',
                             'fragment-updated-recovery-code',
-                            'fragment-updated-enable-disable'
+                            'fragment-updated-enable-disable',
                         ])
-                        ->fields(array_filter([
-                            FlexibleRender::make(static fn () => auth()->user()?->twoFactorQrCodeSvg()),
-                            LineBreak::make(),
-                            Text::make(__('moonshine-two-factor::ui.code')),
-                        ]))->submit(__('moonshine-two-factor::ui.confirm'))->render();
+                        ->fields(
+                            array_filter([
+                                FlexibleRender::make(static fn () => auth()->user()?->twoFactorQrCodeSvg()),
+                                LineBreak::make(),
+                                Text::make(__('moonshine-two-factor::ui.code'), 'code'),
+                            ])
+                        )->submit(__('moonshine-two-factor::ui.confirm'))->render();
                 }
 
                 return '';
@@ -168,7 +169,7 @@ final class TwoFactor
         ])->name('recovery-code')->updateAsync();
     }
 
-    protected function confirmAction(string $title, array $events, Closure $action): array
+    private function confirmAction(string $title, array $events, Closure $action): array
     {
         return array_filter([
             $this->twoFactorWithConfirm() ? ActionButton::make($title, '#')
