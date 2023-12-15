@@ -33,7 +33,7 @@ return [
     // ...
 ];
 ```
-Add trait TwoFactorAuthenticatable to model or user MoonShine\TwoFactor\Models\MoonshineUser
+Add trait TwoFactorAuthenticatable to model or use MoonShine\TwoFactor\Models\MoonshineUser
 
 ```php
 use MoonShine\TwoFactor\Traits\TwoFactorAuthenticatable;
