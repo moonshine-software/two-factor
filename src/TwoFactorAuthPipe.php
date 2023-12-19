@@ -38,6 +38,10 @@ final class TwoFactorAuthPipe
             ?->where($username, $request->get('username'))
             ?->first();
 
+        if (is_null($user)) {
+            return null;
+        }
+
         $attempt = MoonShineAuth::provider()
             ?->validateCredentials($user, ['password' => $request->get('password')]);
 
