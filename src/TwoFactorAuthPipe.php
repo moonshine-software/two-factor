@@ -15,7 +15,7 @@ final class TwoFactorAuthPipe
     {
         $user = $this->validateCredentials($request);
 
-        if (! is_null($user) && $user->getAttribute('two_factor_secret')) {
+        if (! is_null($user) && ! is_null($user->getAttribute('two_factor_confirmed_at'))) {
             $request->session()->put([
                 'login.id' => $user->getKey(),
                 'login.remember' => $request->boolean('remember'),
