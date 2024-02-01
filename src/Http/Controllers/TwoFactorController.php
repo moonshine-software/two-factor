@@ -63,9 +63,7 @@ class TwoFactorController extends MoonShineController
         $request->session()->regenerate();
 
         return redirect()->intended(
-            route(
-                moonshineIndexRoute()
-            )
+            moonshineRouter()->home()
         );
     }
 
