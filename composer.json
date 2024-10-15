@@ -17,7 +17,7 @@
         }
     ],
     "require": {
-        "php": "^8.1|^8.2|^8.3",
+        "php": "^8.2|^8.3",
         "ext-curl": "*",
         "ext-json": "*",
         "bacon/bacon-qr-code": "^2.0",
@@ -41,7 +41,7 @@
         }
     },
     "conflict": {
-        "moonshine/moonshine": "<2.4"
+        "moonshine/moonshine": "<3.0"
     },
     "scripts": {
         "test": "vendor/bin/phpunit",

@@ -7,9 +7,10 @@ namespace MoonShine\TwoFactor\Http\Controllers;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\RedirectResponse;
 use JsonException;
-use MoonShine\Http\Controllers\MoonShineController;
-use MoonShine\MoonShineAuth;
-use MoonShine\MoonShineRequest;
+use MoonShine\Laravel\Http\Controllers\MoonShineController;
+use MoonShine\Laravel\MoonShineAuth;
+use MoonShine\Laravel\MoonShineRequest;
+use MoonShine\Support\Enums\ToastType;
 use MoonShine\TwoFactor\Traits\TwoFactorAuthenticatable;
 use MoonShine\TwoFactor\TwoFactorProvider;
 use PragmaRX\Google2FA\Exceptions\IncompatibleWithGoogleAuthenticatorException;
@@ -32,7 +33,7 @@ class TwoFactorController extends MoonShineController
         $remember = $request->session()->pull('login.remember', false);
         $id = $request->session()->get('login.id');
 
-        $model = MoonShineAuth::model();
+        $model = MoonShineAuth::getModel();
 
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
         $user = $model
@@ -41,29 +42,29 @@ class TwoFactorController extends MoonShineController
 
         if (! $user || ! $request->anyFilled(['recovery_code', 'code'])) {
             return redirect()
-                ->route('moonshine-two-factor.challenge')
+                ->route('moonshine.moonshine-two-factor.challenge')
                 ->withErrors(['code' => __('moonshine-two-factor::validation.invalid_code')]);
         }
 
         if ($request->filled('recovery_code') && ! $user->verifyByRecoverCode(request('recovery_code'))) {
             return redirect()
-                ->route('moonshine-two-factor.challenge')
+                ->route('moonshine.moonshine-two-factor.challenge')
                 ->withErrors(['recovery_code' => __('moonshine-two-factor::validation.invalid_recovery_code')]);
         }
 
         if ($request->filled('code') && ! $user->verify($user->two_factor_secret, $request->code)) {
             return redirect()
-                ->route('moonshine-two-factor.challenge')
+                ->route('moonshine.moonshine-two-factor.challenge')
                 ->withErrors(['code' => __('moonshine-two-factor::validation.invalid_code')]);
         }
 
-        MoonShineAuth::guard()->login($user, $remember);
+        MoonShineAuth::getGuard()->login($user, $remember);
 
         $request->session()->forget('login.id');
         $request->session()->regenerate();
 
         return redirect()->intended(
-            moonshineRouter()->home()
+            moonshineRouter()->getEndpoints()->home()
         );
     }
 
@@ -76,7 +77,7 @@ class TwoFactorController extends MoonShineController
     public function enable(MoonShineRequest $request): Response
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
-        $user = MoonShineAuth::guard()->user();
+        $user = MoonShineAuth::getGuard()->user();
 
         $user->forceFill([
             'two_factor_secret' => encrypt(app(TwoFactorProvider::class)->generateSecretKey()),
@@ -91,7 +92,7 @@ class TwoFactorController extends MoonShineController
     public function disable(MoonShineRequest $request): Response
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
-        $user = MoonShineAuth::guard()->user();
+        $user = MoonShineAuth::getGuard()->user();
 
         $user->forceFill([
             'two_factor_secret' => null,
@@ -113,7 +114,7 @@ class TwoFactorController extends MoonShineController
     public function confirm(MoonShineRequest $request): Response
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
-        $user = MoonShineAuth::guard()->user();
+        $user = MoonShineAuth::getGuard()->user();
         $code = $request->get('code');
 
         if (empty($user->two_factor_secret) ||
@@ -122,7 +123,7 @@ class TwoFactorController extends MoonShineController
             return $request->wantsJson()
                 ? $this->json(
                     __('moonshine-two-factor::validation.invalid_code'),
-                    messageType: 'error'
+                    messageType:ToastType::ERROR
                 )
                 : back()
                     ->withErrors(['code' => __('moonshine-two-factor::validation.invalid_code')]);
@@ -143,7 +144,7 @@ class TwoFactorController extends MoonShineController
     public function refreshCodes(MoonShineRequest $request): Response
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
-        $user = MoonShineAuth::guard()->user();
+        $user = MoonShineAuth::getGuard()->user();
 
         $user->forceFill([
             'two_factor_recovery_codes' => $user->generateRecoveryCode(),

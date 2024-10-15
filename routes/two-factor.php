@@ -1,15 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use MoonShine\Pages\ViewPage;
-use MoonShine\TwoFactor\Forms\ChallengeForm;
 use MoonShine\TwoFactor\Http\Controllers\TwoFactorController;
+use MoonShine\TwoFactor\Pages\ChallengePage;
 
-Route::prefix(config('moonshine.route.prefix', ''))
-    ->middleware('moonshine')
-    ->as('moonshine-two-factor.')->group(static function (): void {
-        Route::middleware(config('moonshine.auth.middleware', []))
-            ->prefix('two-factor')
+Route::moonshine(static function (): void {
+        Route::as('moonshine-two-factor.')
+            ->prefix('t/f/two-factor')
             ->controller(TwoFactorController::class)
             ->group(function (): void {
 
@@ -37,16 +34,11 @@ Route::prefix(config('moonshine.route.prefix', ''))
                 'check',
                 'check',
             )->name('check')
-                ->withoutMiddleware(config('moonshine.auth.middleware', []));
+                ->withoutMiddleware(moonshineConfig()->getAuthMiddleware());
 
-            Route::get('challenge', static function () {
-                return ViewPage::make()
-                    ->setLayout('moonshine::layouts.login')
-                    ->setContentView(
-                        'moonshine-two-factor::login.two-factor-challenge',
-                        ['form' => ChallengeForm::make()]
-                    );
+            Route::get('challenge', static function (ChallengePage $page) {
+                return $page;
             })->name('challenge')
-                ->withoutMiddleware(config('moonshine.auth.middleware', []));
+                ->withoutMiddleware(moonshineConfig()->getAuthMiddleware());
         });
-    });
+}, withAuthenticate: true);

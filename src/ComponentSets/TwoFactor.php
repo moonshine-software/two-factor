@@ -5,28 +5,29 @@ declare(strict_types=1);
 namespace MoonShine\TwoFactor\ComponentSets;
 
 use Closure;
-use MoonShine\ActionButtons\ActionButton;
-use MoonShine\Components\FlexibleRender;
-use MoonShine\Components\FormBuilder;
-use MoonShine\Components\MoonShineComponent;
-use MoonShine\Components\When;
-use MoonShine\Decorations\Block;
-use MoonShine\Decorations\Fragment;
-use MoonShine\Decorations\LineBreak;
-use MoonShine\Exceptions\DecorationException;
-use MoonShine\Exceptions\PageException;
-use MoonShine\Fields\Password;
-use MoonShine\Fields\Text;
+use MoonShine\Laravel\Components\Fragment;
+use MoonShine\Support\AlpineJs;
+use MoonShine\Support\Enums\HttpMethod;
+use MoonShine\Support\Enums\JsEvent;
+use MoonShine\UI\Components\ActionButton;
+use MoonShine\UI\Components\Components;
+use MoonShine\UI\Components\FlexibleRender;
+use MoonShine\UI\Components\FormBuilder;
+use MoonShine\UI\Components\Layout\Box;
+use MoonShine\UI\Components\Layout\LineBreak;
+use MoonShine\UI\Components\MoonShineComponent;
+use MoonShine\UI\Components\When;
+use MoonShine\UI\Fields\Password;
+use MoonShine\UI\Fields\Text;
 
 final class TwoFactor
 {
-    /**
-     * @throws DecorationException
-     * @throws PageException
-     */
     public static function make(): MoonShineComponent
     {
-        return (new self())->twoFactorBlock();
+        return Components::make([
+            LineBreak::make(),
+            (new self())->twoFactorBlock()
+        ]);
     }
 
     private function twoFactorWithConfirm(): bool
@@ -39,13 +40,9 @@ final class TwoFactor
         return config('two-factor.enable', true);
     }
 
-    /**
-     * @throws DecorationException
-     * @throws PageException
-     */
     public function twoFactorBlock(): MoonShineComponent
     {
-        return $this->twoFactorEnabled() ? Block::make(__('moonshine-two-factor::ui.2fa'), [
+        return $this->twoFactorEnabled() ? Box::make(__('moonshine-two-factor::ui.2fa'), [
             $this->enableDisableTwoFactor(),
 
             LineBreak::make(),
@@ -58,10 +55,6 @@ final class TwoFactor
         ]) : LineBreak::make();
     }
 
-    /**
-     * @throws DecorationException
-     * @throws PageException
-     */
     protected function enableDisableTwoFactor(): MoonShineComponent
     {
         $label = request('enable-disable')
@@ -76,49 +69,49 @@ final class TwoFactor
                     ['button-clicked-enable'],
                     fn () => ActionButton::make(
                         $label,
-                        route('moonshine-two-factor.enable')
+                        route('moonshine.moonshine-two-factor.enable')
                     )
                         ->customAttributes([
                             'style' => $this->twoFactorWithConfirm() ? 'display: none;' : '',
                             'x-on:button-clicked-enable.window' => 'request',
                         ])
-                        ->async('POST', events: ['fragment-updated-qr-code', 'fragment-updated-enable-disable'])
+                        ->async(HttpMethod::POST, events: [
+                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'qr-code'),
+                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'enable-disable'),
+                        ])
                 ),
                 fn () => $this->confirmAction(
                     __('moonshine-two-factor::ui.disable'),
                     ['button-clicked-disable'],
                     fn () => ActionButton::make(
                         __('moonshine-two-factor::ui.disable'),
-                        route('moonshine-two-factor.disable')
+                        route('moonshine.moonshine-two-factor.disable')
                     )
                         ->customAttributes([
                             'style' => $this->twoFactorWithConfirm() ? 'display: none;' : '',
                             'x-on:button-clicked-disable.window' => 'request',
                         ])
-                        ->async('DELETE', events: [
-                            'fragment-updated-qr-code',
-                            'fragment-updated-recovery-code',
-                            'fragment-updated-enable-disable',
+                        ->async(HttpMethod::DELETE, events: [
+                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'qr-code'),
+                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'recovery-code'),
+                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'enable-disable'),
                         ])
                 )
             ),
-        ])->name('enable-disable')->updateAsync(['enable-disable' => is_null(auth()->user()->two_factor_confirmed_at)]);
+        ])->name('enable-disable')->updateWith(['enable-disable' => is_null(auth()->user()->two_factor_confirmed_at)]);
     }
 
-    /**
-     * @throws DecorationException
-     * @throws PageException
-     */
+
     protected function twoFactorQrCodes(): MoonShineComponent
     {
         return Fragment::make([
             FlexibleRender::make(static function () {
                 if (request('status') === 'qr' && is_null(auth()->user()->two_factor_confirmed_at)) {
-                    return FormBuilder::make(route('moonshine-two-factor.confirm'))
-                        ->async(asyncEvents: [
-                            'fragment-updated-qr-code',
-                            'fragment-updated-recovery-code',
-                            'fragment-updated-enable-disable',
+                    return FormBuilder::make(route('moonshine.moonshine-two-factor.confirm'))
+                        ->async(events: [
+                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'qr-code'),
+                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'recovery-code'),
+                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'enable-disable'),
                         ])
                         ->fields(
                             array_filter([
@@ -131,13 +124,9 @@ final class TwoFactor
 
                 return '';
             }),
-        ])->name('qr-code')->updateAsync(['status' => 'qr']);
+        ])->name('qr-code')->updateWith(['status' => 'qr']);
     }
 
-    /**
-     * @throws DecorationException
-     * @throws PageException
-     */
     protected function twoFactorRecoveryCodes(): MoonShineComponent
     {
         return Fragment::make([
@@ -156,17 +145,19 @@ final class TwoFactor
                         ['button-clicked-refresh-codes'],
                         fn () => ActionButton::make(
                             __('moonshine-two-factor::ui.refresh_recovery_codes'),
-                            route('moonshine-two-factor.refresh-codes')
+                            route('moonshine.moonshine-two-factor.refresh-codes')
                         )
                             ->customAttributes([
                                 'style' => $this->twoFactorWithConfirm() ? 'display: none;' : '',
                                 'x-on:button-clicked-refresh-codes.window' => 'request',
                             ])
-                            ->async('POST', events: ['fragment-updated-recovery-code'])
+                            ->async(HttpMethod::POST, events: [
+                                AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'recovery-code'),
+                            ])
                     ),
                 ]
             ),
-        ])->name('recovery-code')->updateAsync();
+        ])->name('recovery-code');
     }
 
     private function confirmAction(string $title, array $events, Closure $action): array
@@ -176,7 +167,7 @@ final class TwoFactor
                 ->inModal(
                     __('moonshine-two-factor::ui.confirm'),
                     FormBuilder::make(route('password.confirm'))
-                        ->async(asyncEvents: $events)
+                        ->async(events: $events)
                         ->fields([
                             Password::make(trans('moonshine::ui.resource.password'), 'password')
                                 ->customAttributes(['autocomplete' => 'new-password'])

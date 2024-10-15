@@ -7,7 +7,7 @@ namespace MoonShine\TwoFactor;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use MoonShine\MoonShineAuth;
+use MoonShine\Laravel\MoonShineAuth;
 
 final class TwoFactorAuthPipe
 {
@@ -22,7 +22,7 @@ final class TwoFactorAuthPipe
             ]);
 
             return redirect()
-                ->route('moonshine-two-factor.challenge');
+                ->route('moonshine.moonshine-two-factor.challenge');
         }
 
         return $next($request);
@@ -30,10 +30,10 @@ final class TwoFactorAuthPipe
 
     protected function validateCredentials(Request $request): ?Model
     {
-        $username = config('moonshine.auth.fields.username');
+        $username = moonshineConfig()->getUserField('username');
 
         /** @var Authenticatable|Model $user $user */
-        $user = MoonShineAuth::model()
+        $user = MoonShineAuth::getModel()
             ?->query()
             ?->where($username, $request->get('username'))
             ?->first();
@@ -42,7 +42,7 @@ final class TwoFactorAuthPipe
             return null;
         }
 
-        $attempt = MoonShineAuth::provider()
+        $attempt = MoonShineAuth::getProvider()
             ?->validateCredentials($user, ['password' => $request->get('password')]);
 
         if (! $attempt) {

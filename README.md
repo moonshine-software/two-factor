@@ -2,7 +2,14 @@
 
 ### Requirements
 
-- MoonShine v2.4.0+
+- MoonShine v3.0+
+
+### Support MoonShine versions
+
+| MoonShine   | Layouts |
+|-------------|---------|
+| 2.0+        | 1.0+    |
+| 3.0+        | 2.0+    |
 
 ### Installation
 
@@ -33,6 +40,33 @@ return [
     // ...
 ];
 ```
+
+or in `MoonShineServiceProvider`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Providers;
+
+use MoonShine\Laravel\DependencyInjection\MoonShineConfigurator;
+use MoonShine\Laravel\Providers\MoonShineApplicationServiceProvider;
+use MoonShine\TwoFactor\TwoFactorAuthPipe;
+
+class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
+{
+    // ...
+
+    protected function configure(MoonShineConfigurator $config): MoonShineConfigurator
+    {
+        return $config->authPipelines([
+            TwoFactorAuthPipe::class
+        ]);
+    }
+}
+
+```
 Add trait TwoFactorAuthenticatable to model or use MoonShine\TwoFactor\Models\MoonshineUser
 
 ```php
@@ -44,12 +78,12 @@ class MoonshineUser extends Model
 }
 ```
 
-Add component to ProfilePage
+We will automatically add the component to the profile page, but if you use another page, you can add it yourself.
 
 ```php
 use MoonShine\TwoFactor\ComponentSets\TwoFactor;
 
-protected function components(): array
+protected function components(): iterable
 {
     return [
         // ...
