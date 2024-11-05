@@ -44,29 +44,13 @@ return [
 or in `MoonShineServiceProvider`
 
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Providers;
-
-use MoonShine\Laravel\DependencyInjection\MoonShineConfigurator;
-use MoonShine\Laravel\Providers\MoonShineApplicationServiceProvider;
 use MoonShine\TwoFactor\TwoFactorAuthPipe;
 
-class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
-{
-    // ...
-
-    protected function configure(MoonShineConfigurator $config): MoonShineConfigurator
-    {
-        return $config->authPipelines([
-            TwoFactorAuthPipe::class
-        ]);
-    }
-}
-
+$config->authPipelines([
+    TwoFactorAuthPipe::class
+]);
 ```
+
 Add trait TwoFactorAuthenticatable to model or use MoonShine\TwoFactor\Models\MoonshineUser
 
 ```php
