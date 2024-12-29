@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MoonShine\TwoFactor;
 
-use App\MoonShine\Pages\ProfilePage;
 use Illuminate\Support\ServiceProvider;
+use MoonShine\Laravel\Pages\ProfilePage;
 use MoonShine\TwoFactor\ComponentSets\TwoFactor;
 
 final class TwoFactorServiceProvider extends ServiceProvider
@@ -26,6 +26,7 @@ final class TwoFactorServiceProvider extends ServiceProvider
 
         app()->singleton(TwoFactorProvider::class);
 
-        ProfilePage::pushComponent(fn() => TwoFactor::make());
+        $profile = config('moonshine.pages.profile', ProfilePage::class);
+        $profile::pushComponent(fn() => TwoFactor::make());
     }
 }
