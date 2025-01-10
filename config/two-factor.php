@@ -1,5 +1,6 @@
 <?php
 
 return [
-    'enable' => true
+    'enable' => true,
+    'show_secret_code' => false,
 ];

@@ -123,4 +123,9 @@ trait TwoFactorAuthenticatable
             decrypt($this->two_factor_secret)
         );
     }
+
+    public function twoFactorSecretKeyString()
+    {
+        return decrypt($this->two_factor_secret);
+    }
 }
