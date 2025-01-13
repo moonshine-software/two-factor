@@ -120,11 +120,11 @@ trait TwoFactorAuthenticatable
         return app(TwoFactorProvider::class)->qrCodeUrl(
             config('app.name'),
             $this->{config('moonshine.auth.fields.username', 'email')},
-            decrypt($this->two_factor_secret)
+            $this->decryptedTwoFactorSecret()
         );
     }
 
-    public function twoFactorSecretKeyString(): string
+    public function decryptedTwoFactorSecret(): string
     {
         return decrypt($this->two_factor_secret);
     }

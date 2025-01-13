@@ -97,7 +97,6 @@ final class TwoFactor
                             'x-on:button-clicked-disable.window' => 'request',
                         ])
                         ->async(HttpMethod::DELETE, events: [
-                            AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'qr-code'),
                             AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'recovery-code'),
                             AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'enable-disable'),
                         ])
@@ -124,7 +123,7 @@ final class TwoFactor
             ]);
 
         return Fragment::make([
-            FlexibleRender::make(static function () {
+            FlexibleRender::make(static function () use ($fields) {
                 if (request('status') === 'qr' && is_null(auth()->user()->two_factor_confirmed_at)) {
                     return FormBuilder::make(route('moonshine.moonshine-two-factor.confirm'))
                         ->async(events: [
