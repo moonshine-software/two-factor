@@ -112,7 +112,7 @@ final class TwoFactor
             ? array_filter([
                 FlexibleRender::make(static fn () => auth()->user()?->twoFactorQrCodeSvg()),
                 LineBreak::make(),
-                FlexibleRender::make(static fn () => auth()->user()?->twoFactorSecretKeyString()),
+                FlexibleRender::make(static fn () => auth()->user()?->decryptedTwoFactorSecret()),
                 LineBreak::make(),
                 Text::make(__('moonshine-two-factor::ui.code'), 'code'),
             ])
