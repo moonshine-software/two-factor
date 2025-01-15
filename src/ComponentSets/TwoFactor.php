@@ -10,10 +10,12 @@ use MoonShine\Support\AlpineJs;
 use MoonShine\Support\Enums\HttpMethod;
 use MoonShine\Support\Enums\JsEvent;
 use MoonShine\UI\Components\ActionButton;
+use MoonShine\UI\Components\Collapse;
 use MoonShine\UI\Components\Components;
 use MoonShine\UI\Components\FlexibleRender;
 use MoonShine\UI\Components\FormBuilder;
 use MoonShine\UI\Components\Layout\Box;
+use MoonShine\UI\Components\Layout\Div;
 use MoonShine\UI\Components\Layout\LineBreak;
 use MoonShine\UI\Components\MoonShineComponent;
 use MoonShine\UI\Components\When;
@@ -172,7 +174,7 @@ final class TwoFactor
                                     ])
                             ),
                         ])
-                    ])->persist(true),
+                    ])->persist(true)->open(false),
                 ]
             ),
         ])->name('recovery-code');
