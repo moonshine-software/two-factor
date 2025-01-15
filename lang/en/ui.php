@@ -9,4 +9,5 @@ return [
     'code' => 'Code',
     'or_recovery_code' => 'Or enter the recovery code',
     'confirm' => 'Confirm',
+    'show_recovery_code' => 'Show recovery codes'
 ];

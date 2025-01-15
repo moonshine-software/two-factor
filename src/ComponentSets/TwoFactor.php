@@ -148,27 +148,31 @@ final class TwoFactor
                 static fn () => ! is_null(auth()->user()->two_factor_secret)
                     && ! is_null(auth()->user()->two_factor_confirmed_at),
                 fn () => [
-                    FlexibleRender::make(static fn () => collect(
-                        auth()->user()->two_factor_secret ? auth()->user()?->recoveryCodes() : []
-                    )->implode('<br>')),
+                    Collapse::make(__('moonshine-two-factor::ui.show_recovery_code'), [
+                        Div::make([
+                            FlexibleRender::make(static fn () => collect(
+                                auth()->user()->two_factor_secret ? auth()->user()?->recoveryCodes() : []
+                            )->implode('<br>')),
 
-                    LineBreak::make(),
+                            LineBreak::make(),
 
-                    ...$this->confirmAction(
-                        __('moonshine-two-factor::ui.refresh_recovery_codes'),
-                        ['button-clicked-refresh-codes'],
-                        fn () => ActionButton::make(
-                            __('moonshine-two-factor::ui.refresh_recovery_codes'),
-                            route('moonshine.moonshine-two-factor.refresh-codes')
-                        )
-                            ->customAttributes([
-                                'style' => $this->twoFactorWithConfirm() ? 'display: none;' : '',
-                                'x-on:button-clicked-refresh-codes.window' => 'request',
-                            ])
-                            ->async(HttpMethod::POST, events: [
-                                AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'recovery-code'),
-                            ])
-                    ),
+                            ...$this->confirmAction(
+                                __('moonshine-two-factor::ui.refresh_recovery_codes'),
+                                ['button-clicked-refresh-codes'],
+                                fn () => ActionButton::make(
+                                    __('moonshine-two-factor::ui.refresh_recovery_codes'),
+                                    route('moonshine.moonshine-two-factor.refresh-codes')
+                                )
+                                    ->customAttributes([
+                                        'style' => $this->twoFactorWithConfirm() ? 'display: none;' : '',
+                                        'x-on:button-clicked-refresh-codes.window' => 'request',
+                                    ])
+                                    ->async(HttpMethod::POST, events: [
+                                        AlpineJs::event(JsEvent::FRAGMENT_UPDATED, 'recovery-code'),
+                                    ])
+                            ),
+                        ])
+                    ])->persist(true),
                 ]
             ),
         ])->name('recovery-code');
