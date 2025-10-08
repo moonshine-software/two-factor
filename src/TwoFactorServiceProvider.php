@@ -13,7 +13,6 @@ final class TwoFactorServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadRoutesFrom(__DIR__ . '/../routes/two-factor.php');
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->loadTranslationsFrom(__DIR__ . '/../lang', 'moonshine-two-factor');
 
 
