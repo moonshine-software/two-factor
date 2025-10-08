@@ -16,7 +16,7 @@ final class TwoFactorServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__ . '/../lang', 'moonshine-two-factor');
 
 
-        $this->publishes([
+        $this->publishesMigrations([
             __DIR__ . '/../database/migrations' => database_path('migrations'),
         ]);
         
