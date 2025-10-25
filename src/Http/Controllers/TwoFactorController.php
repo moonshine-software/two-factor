@@ -7,9 +7,9 @@ namespace MoonShine\TwoFactor\Http\Controllers;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\RedirectResponse;
 use JsonException;
+use MoonShine\Contracts\Core\DependencyInjection\CrudRequestContract;
 use MoonShine\Laravel\Http\Controllers\MoonShineController;
 use MoonShine\Laravel\MoonShineAuth;
-use MoonShine\Laravel\MoonShineRequest;
 use MoonShine\Support\Enums\ToastType;
 use MoonShine\TwoFactor\Traits\TwoFactorAuthenticatable;
 use MoonShine\TwoFactor\TwoFactorProvider;
@@ -28,7 +28,7 @@ class TwoFactorController extends MoonShineController
      * @throws SecretKeyTooShortException
      * @throws JsonException
      */
-    public function check(MoonShineRequest $request): RedirectResponse
+    public function check(CrudRequestContract $request): RedirectResponse
     {
         $remember = $request->session()->pull('login.remember', false);
         $id = $request->session()->get('login.id');
@@ -74,7 +74,7 @@ class TwoFactorController extends MoonShineController
      * @throws SecretKeyTooShortException
      * @throws JsonException
      */
-    public function enable(MoonShineRequest $request): Response
+    public function enable(CrudRequestContract $request): Response
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
         $user = MoonShineAuth::getGuard()->user();
@@ -89,7 +89,7 @@ class TwoFactorController extends MoonShineController
             : back();
     }
 
-    public function disable(MoonShineRequest $request): Response
+    public function disable(CrudRequestContract $request): Response
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
         $user = MoonShineAuth::getGuard()->user();
@@ -111,7 +111,7 @@ class TwoFactorController extends MoonShineController
      * @throws SecretKeyTooShortException
      * @throws InvalidArgumentException
      */
-    public function confirm(MoonShineRequest $request): Response
+    public function confirm(CrudRequestContract $request): Response
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
         $user = MoonShineAuth::getGuard()->user();
@@ -141,7 +141,7 @@ class TwoFactorController extends MoonShineController
     /**
      * @throws JsonException
      */
-    public function refreshCodes(MoonShineRequest $request): Response
+    public function refreshCodes(CrudRequestContract $request): Response
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
         $user = MoonShineAuth::getGuard()->user();

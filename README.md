@@ -2,14 +2,15 @@
 
 ### Requirements
 
-- MoonShine v3.0+
+- MoonShine v4.0+
 
 ### Support MoonShine versions
 
-| MoonShine   | Layouts |
-|-------------|---------|
-| 2.0+        | 1.0+    |
-| 3.0+        | 2.0+    |
+| MoonShine | Layouts |
+|-----------|---------|
+| 2.0+      | 1.0+    |
+| 3.0+      | 2.0+    |
+| 4.0+      | 3.0+    |
 
 ### Installation
 

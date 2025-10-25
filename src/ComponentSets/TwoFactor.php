@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MoonShine\TwoFactor\ComponentSets;
 
 use Closure;
-use MoonShine\Laravel\Components\Fragment;
+use MoonShine\Crud\Components\Fragment;
 use MoonShine\Support\AlpineJs;
 use MoonShine\Support\Enums\HttpMethod;
 use MoonShine\Support\Enums\JsEvent;
