@@ -8,6 +8,7 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\Fill;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -25,7 +26,7 @@ trait TwoFactorAuthenticatable
 {
     public function hasEnabledTwoFactorAuthentication(): bool
     {
-        if (config('two-factor.enable', true)) {
+        if (config('moonshine-two-factor.enable', true)) {
             return ! is_null($this->two_factor_secret) &&
                 ! is_null($this->two_factor_confirmed_at);
         }
@@ -126,6 +127,14 @@ trait TwoFactorAuthenticatable
 
     public function decryptedTwoFactorSecret(): string
     {
-        return decrypt($this->two_factor_secret);
+        if (blank($this->two_factor_secret)) {
+            return '';
+        }
+
+        try {
+            return decrypt($this->two_factor_secret);
+        } catch (DecryptException) {
+            return '';
+        }
     }
 }

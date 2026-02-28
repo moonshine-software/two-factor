@@ -8,6 +8,7 @@ use MoonShine\Contracts\UI\FormBuilderContract;
 use MoonShine\Contracts\UI\FormContract;
 use MoonShine\UI\Components\FormBuilder;
 use MoonShine\UI\Fields\Password;
+use MoonShine\TwoFactor\Fields\OtpCode;
 
 final class ChallengeForm implements FormContract
 {
@@ -15,13 +16,21 @@ final class ChallengeForm implements FormContract
     {
         return FormBuilder::make(route('moonshine.moonshine-two-factor.check'))
             ->class('authentication-form')
+            ->async()
+            ->withoutErrorToast()
+            ->errorsAbove(false)
             ->fields([
-                Password::make(__('moonshine-two-factor::ui.code'), 'code')
-                    ->customAttributes(['autocomplete' => 'off'])
-                    ->eye(),
+                OtpCode::make(__('moonshine-two-factor::ui.code'), 'code'),
 
                 Password::make(__('moonshine-two-factor::ui.or_recovery_code'), 'recovery_code')
-                    ->customAttributes(['autocomplete' => 'off'])
+                    ->customAttributes([
+                        'autocomplete' => 'off',
+                        'autocapitalize' => 'off',
+                        'spellcheck' => 'false',
+                    ])
+                    ->customWrapperAttributes([
+                        'hidden' => 'hidden',
+                    ])
                     ->eye()
             ])
             ->submit(__('moonshine-two-factor::ui.confirm'), ['class' => 'btn btn-primary w-full']);
