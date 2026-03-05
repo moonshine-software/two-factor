@@ -6,6 +6,7 @@ namespace MoonShine\TwoFactor\Http\Controllers;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 use JsonException;
 use MoonShine\Contracts\Core\DependencyInjection\CrudRequestContract;
 use MoonShine\Laravel\Http\Controllers\MoonShineController;
@@ -28,10 +29,12 @@ class TwoFactorController extends MoonShineController
      * @throws SecretKeyTooShortException
      * @throws JsonException
      */
-    public function check(CrudRequestContract $request): RedirectResponse
+    public function check(CrudRequestContract $request): Response|RedirectResponse
     {
         $remember = $request->session()->pull('login.remember', false);
         $id = $request->session()->get('login.id');
+        $code = $this->normalizeCode((string) $request->get('code'));
+        $recoveryCode = (string) $request->get('recovery_code');
 
         $model = MoonShineAuth::getModel();
 
@@ -40,22 +43,28 @@ class TwoFactorController extends MoonShineController
             ?->query()
             ?->find($id);
 
-        if (! $user || ! $request->anyFilled(['recovery_code', 'code'])) {
-            return redirect()
-                ->route('moonshine.moonshine-two-factor.challenge')
-                ->withErrors(['code' => __('moonshine-two-factor::validation.invalid_code')]);
+        if (! $user || ($code === '' && $recoveryCode === '')) {
+            return $this->invalidChallengeResponse(
+                $request,
+                'code',
+                __('moonshine-two-factor::validation.invalid_code')
+            );
         }
 
-        if ($request->filled('recovery_code') && ! $user->verifyByRecoverCode(request('recovery_code'))) {
-            return redirect()
-                ->route('moonshine.moonshine-two-factor.challenge')
-                ->withErrors(['recovery_code' => __('moonshine-two-factor::validation.invalid_recovery_code')]);
+        if ($recoveryCode !== '' && ! $user->verifyByRecoverCode($recoveryCode)) {
+            return $this->invalidChallengeResponse(
+                $request,
+                'recovery_code',
+                __('moonshine-two-factor::validation.invalid_recovery_code')
+            );
         }
 
-        if ($request->filled('code') && ! $user->verify($user->two_factor_secret, $request->code)) {
-            return redirect()
-                ->route('moonshine.moonshine-two-factor.challenge')
-                ->withErrors(['code' => __('moonshine-two-factor::validation.invalid_code')]);
+        if ($code !== '' && ! $user->verify($user->two_factor_secret, $code)) {
+            return $this->invalidChallengeResponse(
+                $request,
+                'code',
+                __('moonshine-two-factor::validation.invalid_code')
+            );
         }
 
         MoonShineAuth::getGuard()->login($user, $remember);
@@ -63,9 +72,14 @@ class TwoFactorController extends MoonShineController
         $request->session()->forget('login.id');
         $request->session()->regenerate();
 
-        return redirect()->intended(
+        $redirect = $request->session()->pull(
+            'url.intended',
             moonshineRouter()->getEndpoints()->home()
         );
+
+        return $request->wantsJson()
+            ? $this->json(redirect: $redirect)
+            : redirect($redirect);
     }
 
     /**
@@ -115,7 +129,7 @@ class TwoFactorController extends MoonShineController
     {
         /** @var Authenticatable|TwoFactorAuthenticatable $user */
         $user = MoonShineAuth::getGuard()->user();
-        $code = $request->get('code');
+        $code = $this->normalizeCode((string) $request->get('code'));
 
         if (empty($user->two_factor_secret) ||
             empty($code) ||
@@ -153,5 +167,29 @@ class TwoFactorController extends MoonShineController
         return $request->wantsJson()
             ? response()->json($user->recoveryCodes())
             : back();
+    }
+
+    private function normalizeCode(string $code): string
+    {
+        return preg_replace('/\D+/', '', $code) ?? '';
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function invalidChallengeResponse(
+        CrudRequestContract $request,
+        string $field,
+        string $message,
+    ): RedirectResponse {
+        if ($request->wantsJson()) {
+            throw ValidationException::withMessages([
+                $field => [$message],
+            ]);
+        }
+
+        return redirect()
+            ->route('moonshine.moonshine-two-factor.challenge')
+            ->withErrors([$field => $message]);
     }
 }

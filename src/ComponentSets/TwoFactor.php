@@ -39,12 +39,12 @@ final class TwoFactor
 
     private function twoFactorEnabled(): bool
     {
-        return config('two-factor.enable', true);
+        return config('moonshine-two-factor.enable', true);
     }
 
     private function twoFactorShowSecretCode(): bool
     {
-        return config('two-factor.show_secret_code', false);
+        return config('moonshine-two-factor.show_secret_code', false);
     }
 
     public function twoFactorBlock(): MoonShineComponent
@@ -110,19 +110,25 @@ final class TwoFactor
 
     protected function twoFactorQrCodes(): MoonShineComponent
     {
-        $fields = $this->twoFactorShowSecretCode()
-            ? array_filter([
-                FlexibleRender::make(static fn () => auth()->user()?->twoFactorQrCodeSvg()),
-                LineBreak::make(),
-                FlexibleRender::make(static fn () => auth()->user()?->decryptedTwoFactorSecret()),
-                LineBreak::make(),
-                Text::make(__('moonshine-two-factor::ui.code'), 'code'),
-            ])
-            : array_filter([
-                FlexibleRender::make(static fn () => auth()->user()?->twoFactorQrCodeSvg()),
-                LineBreak::make(),
-                Text::make(__('moonshine-two-factor::ui.code'), 'code'),
-            ]);
+        $fields = array_filter([
+            FlexibleRender::make(static fn () => auth()->user()?->twoFactorQrCodeSvg()),
+            LineBreak::make(),
+            $this->twoFactorShowSecretCode()
+                ? Text::make(__('moonshine-two-factor::ui.secret_key'), 'secret')
+                    ->setValue(auth()->user()?->two_factor_secret
+                        ? auth()->user()?->decryptedTwoFactorSecret()
+                        : ''
+                    )
+                    ->readonly()
+                    ->copy()
+                    ->customAttributes([
+                        'spellcheck' => 'false',
+                        'style' => 'pointer-events: auto; cursor: pointer',
+                        'onclick' => 'this.select(); navigator.clipboard.writeText(this.value)',
+                    ])
+                : null,
+            Text::make(__('moonshine-two-factor::ui.code'), 'code'),
+        ]);
 
         return Fragment::make([
             FlexibleRender::make(static function () use ($fields) {

@@ -1,0 +1,54 @@
+ .moonshine-two-factor-otp__hint {
+    padding-top: 10px;
+    text-align: center;
+}
+
+.moonshine-two-factor-otp__grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.moonshine-two-factor-otp__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.moonshine-two-factor-otp__digit {
+    width: 100%;
+    min-height: 3.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+    padding-inline: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.moonshine-two-factor-otp--invalid .moonshine-two-factor-otp__digit {
+    border-color: var(--ms-form-error-border-color);
+}
+
+.moonshine-two-factor-otp__error {
+    margin-top: 0;
+    text-align: center;
+}
+
+.moonshine-two-factor-otp__body > .form-error {
+    margin-top: 0;
+    text-align: center;
+    grid-column: auto;
+}
+
+@media (max-width: 640px) {
+    .moonshine-two-factor-otp__grid {
+        gap: 0.5rem;
+    }
+
+    .moonshine-two-factor-otp__digit {
+        min-height: 3.25rem;
+        font-size: 1.25rem;
+    }
+}
