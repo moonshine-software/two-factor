@@ -43,7 +43,7 @@ class TwoFactorProvider
     public function verify(string $secret, string $code): bool
     {
         $timestamp = $this->engine->verifyKeyNewer(
-            $secret, $code, optional($this->cache)->get($key = 'moonshine.2fa_codes.'.md5($code))
+            $secret, $code, $this->cache?->get($key = 'moonshine.2fa_codes.'.md5($code))
         );
 
         if ($timestamp !== false) {
@@ -51,7 +51,7 @@ class TwoFactorProvider
                 $timestamp = $this->engine->getTimestamp();
             }
 
-            optional($this->cache)->put($key, $timestamp, ($this->engine->getWindow() ?: 1) * 60);
+            $this->cache?->put($key, $timestamp, ($this->engine->getWindow() ?: 1) * 60);
 
             return true;
         }
